@@ -65,11 +65,16 @@ firmware.elf: $(OBJS)
 	@echo " [AS]" $<
 	@$(CC) $(FLAGS) -o $@ $<
 
+debug:
+	@openocd -f interface/cmsis-dap.cfg -f target/stm32h7x.cfg -c "adapter speed 10" & gdb-multiarch ./firmware.elf -ex "target extended-remote :3333" -ex "monitor [target current] configure -event gdb-detach {shutdown}"
+
+run:
+	python3 -m stm32loader -p /dev/ttyACM0 -g 0x08000000
+
 flash: firmware.elf
 	arm-none-eabi-objcopy -O binary firmware.elf firmware.bin
 	python3 -m stm32loader -p /dev/ttyACM0 -e -v -w firmware.bin
 	python3 -m stm32loader -p /dev/ttyACM0 -g 0x08000000
-
 clean:
 	@rm -f $(OBJS) firmware.elf firmware.map
 ################################################################################

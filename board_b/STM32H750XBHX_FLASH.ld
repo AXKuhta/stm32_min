@@ -44,7 +44,7 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
+_estack = ORIGIN(RAM) + LENGTH(RAM) - 16; /* end of "RAM" Ram type memory, -16 bytes to work around a bootrom bug: go command does not work if stack pointer is at very bottom of ram */
 
 _Min_Heap_Size = 0x400; /* required amount of heap */
 _Min_Stack_Size = 0x800; /* required amount of stack */
