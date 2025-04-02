@@ -6,18 +6,18 @@ void Error_Handler(void) {
 }
 
 // Don't have HSE so running off of HSI
-// PLL should run at 800 MHz
+// PLL should run at 960 MHz
 // HSI = 64 MHz
 // PLLM = 4
-// PLLN = 200
+// PLLN = 240
 //
-//  *            SYSCLK(Hz)                     = 400000000 (CPU Clock)
-//  *            HCLK(Hz)                       = 200000000 (AXI and AHBs Clock)
+//  *            SYSCLK(Hz)                     = 480000000 (CPU Clock)
+//  *            HCLK(Hz)                       = 240000000 (AXI and AHBs Clock)
 //  *            AHB Prescaler                  = 2
-//  *            D1 APB3 Prescaler              = 2 (APB3 Clock  100MHz)
-//  *            D2 APB1 Prescaler              = 2 (APB1 Clock  100MHz)
-//  *            D2 APB2 Prescaler              = 2 (APB2 Clock  100MHz)
-//  *            D3 APB4 Prescaler              = 2 (APB4 Clock  100MHz)
+//  *            D1 APB3 Prescaler              = 2 (APB3 Clock  120MHz)
+//  *            D2 APB1 Prescaler              = 2 (APB1 Clock  120MHz)
+//  *            D2 APB2 Prescaler              = 2 (APB2 Clock  120MHz)
+//  *            D3 APB4 Prescaler              = 2 (APB4 Clock  120MHz)
 //  *            PLL_P                          = 2
 //  *            PLL_Q                          = 4
 //  *            PLL_R                          = 2
@@ -33,12 +33,13 @@ static void SystemClock_Config(void)
   /* The voltage scaling allows optimizing the power consumption when the device is
      clocked below the maximum system frequency, to update the voltage scaling value
      regarding system frequency refer to product datasheet.  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
   /* Enable HSE Oscillator and activate PLL with HSE as source */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSEState = RCC_HSE_OFF;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
@@ -46,7 +47,7 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
 
   RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 200;
+  RCC_OscInitStruct.PLL.PLLN = 240;
   RCC_OscInitStruct.PLL.PLLFRACN = 0;
   RCC_OscInitStruct.PLL.PLLP = 2;
   RCC_OscInitStruct.PLL.PLLR = 2;
@@ -71,6 +72,9 @@ static void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+
+  // See https://www.st.com/resource/en/reference_manual/rm0433-stm32h742-stm32h743753-and-stm32h750-value-line-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+  // Page 160
   ret = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
   if(ret != HAL_OK)
   {
