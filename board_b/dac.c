@@ -2,6 +2,7 @@
 #include "stm32h7xx_hal.h"
 
 static DAC_HandleTypeDef hdac1;
+static DAC_ChannelConfTypeDef sConfig;
 
 // https://github.com/STMicroelectronics/STM32CubeH7/blob/master/Projects/NUCLEO-H723ZG/Examples/DAC/DAC_SignalsGeneration/Src/main.c
 void dac_init() {
@@ -20,13 +21,19 @@ void dac_init() {
 
 	// DAC_TRIGGER_NONE		Value effective as soon as set
 	// DAC_TRIGGER_SOFTWARE		Value effective after SWTRIG in HAL_DAC_Start()
-	DAC_ChannelConfTypeDef sConfig = {
+	sConfig = (DAC_ChannelConfTypeDef) {
 		.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE,
 		.DAC_Trigger = DAC_TRIGGER_NONE,
 		.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE,
 		.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_EXTERNAL,
-		.DAC_UserTrimming = DAC_TRIMMING_FACTORY
+		.DAC_UserTrimming = DAC_TRIMMING_FACTORY,
+		.DAC_TrimmingValue = 0
 	};
+
+	// Updates .DAC_UserTrimming and .DAC_TrimmingValue
+	if (HAL_DACEx_SelfCalibrate(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK) {
+		while (1) {}
+	}
 
 	if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK) {
 		while (1) {}
