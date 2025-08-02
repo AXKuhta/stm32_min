@@ -9,9 +9,5 @@ int main() {
 	system_init();
 	dac_init();
 
-	while (1) {
-		for (int i = 0; i < 4096; i++) {
-			dac_write(i);
-		}
-	};
+	while (1) {}
 }
