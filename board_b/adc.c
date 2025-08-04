@@ -52,12 +52,18 @@ void adc_init() {
 	__HAL_RCC_ADC12_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
+	// Required if asynchronous clock used
+	HAL_RCCEx_PeriphCLKConfig(&(RCC_PeriphCLKInitTypeDef){
+		.PeriphClockSelection = RCC_PERIPHCLK_ADC,
+		.AdcClockSelection    = RCC_ADCCLKSOURCE_CLKP
+	});
+
 	HAL_GPIO_Init(GPIOB, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_0, .Mode = GPIO_MODE_ANALOG, .Pull = GPIO_NOPULL });
 
 	hadc1 = (ADC_HandleTypeDef) {
 		.Instance = ADC1,
 		.Init = {
-			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV4,          /* Asynchronous clock mode, input ADC clock divided by 2*/
+			  .ClockPrescaler           = ADC_CLOCK_ASYNC_DIV8,          /* Asynchronous clock mode, input ADC clock divided by 8, so 30 MHz */
 			  .Resolution               = ADC_RESOLUTION_16B,            /* 16-bit resolution for converted data */
 			  .ScanConvMode             = DISABLE,                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
 			  .EOCSelection             = ADC_EOC_SINGLE_CONV,           /* EOC flag picked-up to indicate conversion end */
