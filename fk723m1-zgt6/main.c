@@ -10,6 +10,7 @@ void display_r();
 void display_g();
 void display_b();
 void usb_hw_init();
+void adc_init();
 
 int main() {
 	__HAL_RCC_GPIOG_CLK_ENABLE();
@@ -27,12 +28,22 @@ int main() {
 	};
 	tusb_init(1, &dev_init);
 
+	adc_init();
+
 	display_init();
 	display_enable();
 	display_g();
 
+	uint32_t next_msg_at = 1000;
+
 	while (1) {
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, HAL_GetTick() % 1000 < 200);
 		tud_task();
+
+		if (HAL_GetTick() > next_msg_at) {
+			tud_cdc_write("hello\r\n", 7);
+			tud_cdc_write_flush();
+			next_msg_at += 1000;
+		}
 	}
 }

@@ -14,14 +14,14 @@ void Error_Handler(void) {
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE BYPASS)
-  *            SYSCLK(Hz)                     = 520000000 (CPU Clock)
-  *            HCLK(Hz)                       = 260000000 (AXI and AHBs Clock)
+  *            System Clock source            = PLL
+  *            SYSCLK(Hz)                     = 550000000 (CPU Clock)
+  *            HCLK(Hz)                       = 275000000 (AXI and AHBs Clock)
   *            AHB Prescaler                  = 2
-  *            D1 APB3 Prescaler              = 2 (APB3 Clock  130MHz)
-  *            D2 APB1 Prescaler              = 2 (APB1 Clock  130MHz)
-  *            D2 APB2 Prescaler              = 2 (APB2 Clock  130MHz)
-  *            D3 APB4 Prescaler              = 2 (APB4 Clock  130MHz)
+  *            D1 APB3 Prescaler              = 2 (APB3 Clock  137.5MHz)
+  *            D2 APB1 Prescaler              = 2 (APB1 Clock  137.5MHz)
+  *            D2 APB2 Prescaler              = 2 (APB2 Clock  137.5MHz)
+  *            D3 APB4 Prescaler              = 2 (APB4 Clock  137.5MHz)
   *            HSE Frequency(Hz)              = 25000000
   *            PLL_M                          = 1
   *            PLL_N                          = 22
@@ -112,7 +112,7 @@ void HAL_SYSTICK_Callback(void) {
 }
 
 void system_init() {
-	CPU_CACHE_Enable();
+	//CPU_CACHE_Enable();
 	HAL_Init();
 	SystemClock_Config();
 }
