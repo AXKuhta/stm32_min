@@ -1,5 +1,6 @@
 
 #include "stm32h7xx_hal.h"
+#include "tusb.h"
 
 void system_init();
 void display_init();
@@ -8,6 +9,7 @@ void display_disable();
 void display_r();
 void display_g();
 void display_b();
+void usb_hw_init();
 
 int main() {
 	__HAL_RCC_GPIOG_CLK_ENABLE();
@@ -16,11 +18,21 @@ int main() {
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, 0); // Led fed from 3.3V
 
 	system_init();
+
+	usb_hw_init();
+
+	tusb_rhport_init_t dev_init = {
+		.role = TUSB_ROLE_DEVICE,
+		.speed = TUSB_SPEED_AUTO
+	};
+	tusb_init(1, &dev_init);
+
 	display_init();
 	display_enable();
 	display_g();
 
 	while (1) {
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_7, HAL_GetTick() % 1000 < 200);
+		tud_task();
 	}
 }

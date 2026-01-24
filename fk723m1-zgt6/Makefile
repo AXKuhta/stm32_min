@@ -4,6 +4,16 @@
 # SOURCE FILES
 ################################################################################
 
+include tinyusb/src/tinyusb.mk
+
+TINYUSB_SRC_C +=  \
+        src/portable/synopsys/dwc2/dcd_dwc2.c \
+        src/portable/synopsys/dwc2/hcd_dwc2.c \
+        src/portable/synopsys/dwc2/dwc2_common.c
+
+TINYUSB_SOURCE = $(addprefix tinyusb/,$(TINYUSB_SRC_C))
+TINYUSB_OBJS = $(TINYUSB_SOURCE:c=o)
+
 CMSIS_SUBDIR = STM32CubeH7/Drivers/CMSIS
 CMSIS_DEVICE_SUBDIR = $(CMSIS_SUBDIR)/Device/ST/STM32H7xx
 STARTUP_OBJ = $(CMSIS_DEVICE_SUBDIR)/Source/Templates/gcc/startup_stm32h723xx.o
@@ -15,7 +25,7 @@ HAL_OBJS = $(HAL_SOURCE:c=o)
 APP_SOURCE = $(wildcard *.c)
 APP_OBJS = $(APP_SOURCE:c=o)
 
-OBJS = $(STARTUP_OBJ) $(HAL_OBJS) $(APP_OBJS)
+OBJS = $(TINYUSB_OBJS) $(STARTUP_OBJ) $(HAL_OBJS) $(APP_OBJS)
 
 # Sourced from STM32CubeH7/Projects/NUCLEO-H723ZG/Examples/RCC/RCC_ClockConfig/STM32CubeIDE/STM32H723ZGTX_FLASH.ld
 LDSCRIPT = STM32H723ZGTX_FLASH.ld
@@ -25,8 +35,12 @@ LDSCRIPT = STM32H723ZGTX_FLASH.ld
 ################################################################################
 # COMPILER FLAGS
 ################################################################################
-DEFINES = -D"USE_HAL_DRIVER" -D"STM32H723xx" -D"APPLICATION_ADDRESS=0x08000000U" -D"USE_PWR_LDO_SUPPLY"
-INCLUDE = -I"include/" -I"$(CMSIS_SUBDIR)/Core/Include" -I"$(CMSIS_DEVICE_SUBDIR)/Include" -I"$(HAL_SUBDIR)/Inc"
+DEFINES = -D"USE_HAL_DRIVER" -D"STM32H723xx" -D"APPLICATION_ADDRESS=0x08000000U" -D"USE_PWR_LDO_SUPPLY" \
+	-D"CFG_TUSB_MCU=OPT_MCU_STM32H7" \
+	-D"BOARD_TUH_RHPORT=0" \
+	-D"BOARD_TUH_MAX_SPEED=OPT_MODE_FULL_SPEED"
+
+INCLUDE = -I"include/" -I"$(CMSIS_SUBDIR)/Core/Include" -I"$(CMSIS_DEVICE_SUBDIR)/Include" -I"$(HAL_SUBDIR)/Inc" -I"tinyusb/src"
 
 # https://github.com/MayaPosch/Nodate/blob/master/arch/stm32/Makefile
 MCU_FLAGS := -mcpu=cortex-m7 -mfloat-abi=hard
