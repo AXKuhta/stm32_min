@@ -11,6 +11,8 @@ void display_g();
 void display_b();
 void usb_hw_init();
 void adc_init();
+void analog_init();
+void timers_init();
 
 int main() {
 	__HAL_RCC_GPIOG_CLK_ENABLE();
@@ -29,10 +31,12 @@ int main() {
 	tusb_init(1, &dev_init);
 
 	adc_init();
+	analog_init();
+	timers_init();
 
-	display_init();
-	display_enable();
-	display_g();
+	//display_init();
+	//display_enable();
+	//display_g();
 
 	uint32_t next_msg_at = 1000;
 
