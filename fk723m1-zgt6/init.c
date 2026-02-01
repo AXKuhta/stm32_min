@@ -80,5 +80,5 @@ void system_init() {
 	//CPU_CACHE_Enable();
 	HAL_Init();
 
-	system_clock_target(408);
+	system_clock_target(550);
 }

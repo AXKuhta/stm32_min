@@ -50,6 +50,7 @@ void chop_timer_init(uint16_t period) {
 	__HAL_RCC_TIM1_CLK_ENABLE();
 
 	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_11, .Mode = GPIO_MODE_AF_OD, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST, .Alternate = GPIO_AF1_TIM1 });
+	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_13, .Mode = GPIO_MODE_AF_OD, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST, .Alternate = GPIO_AF1_TIM1 });
 
 	chop_timer = (TIM_HandleTypeDef) {
 		.Instance = TIM1,
@@ -72,21 +73,22 @@ void chop_timer_init(uint16_t period) {
 		.OCFastMode = TIM_OCFAST_DISABLE
 	}, TIM_CHANNEL_2);
 
+	HAL_TIM_PWM_ConfigChannel(&chop_timer, &(TIM_OC_InitTypeDef){
+		.OCMode = TIM_OCMODE_PWM2,
+		.Pulse = period/2 + 1,
+		.OCPolarity = TIM_OCPOLARITY_HIGH,
+		.OCFastMode = TIM_OCFAST_DISABLE
+	}, TIM_CHANNEL_3);
+
 	HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
 	HAL_NVIC_SetPriority(TIM1_UP_IRQn, 0, 0);
 
 	HAL_TIM_PWM_Start(&chop_timer, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&chop_timer, TIM_CHANNEL_3);
 }
 
 void timers_init() {
-	__HAL_RCC_GPIOE_CLK_ENABLE();
-
-	// Put this entire bank into high z
-	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_11, .Mode = GPIO_MODE_INPUT, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST });
-	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_12, .Mode = GPIO_MODE_INPUT, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST });
-	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_13, .Mode = GPIO_MODE_INPUT, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST });
-
 	//chop_timer_init(2 - 1); // 850 kHz
-	chop_timer_init(240 - 1); // 850 kHz
-	emit_timer_init(204 - 1); // 1.0 MHz
+	chop_timer_init(26 - 1); // 850 kHz
+	emit_timer_init(25 - 1); // 1.0 MHz
 }

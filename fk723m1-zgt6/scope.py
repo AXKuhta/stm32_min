@@ -20,14 +20,14 @@ handle.claimInterface(2)
 
 EP = 0x03
 
-# Bus clock = 204 MHz
-# ADC clock = 51 MHz
-#
-# 32 clocks per sample
-#
-# Samplerate = 1.59375 MHz
+# Rates in MHz
+bus_clock = 137.5
+adc_clock = bus_clock/1
+persample = 8.5 + 16.5 # timings depending on resolution + sampling time
+samplerate = adc_clock/persample
+
 def wave_display():
-	x = 627.4509 * np.arange(4096) / 1000
+	x = 1/samplerate * np.arange(4096) # us per sample
 
 	while True:
 		byts = b""
@@ -40,17 +40,17 @@ def wave_display():
 		plt.clf()
 		plt.plot(x, ints)
 		plt.ylim(0, 65535)
-		plt.xlim(0, 128)
+		plt.xlim(0, 16)
 		plt.xlabel("us")
 		plt.pause(.1)
 
 def stft_display():
 	stft_log = []
 
-	spcy = np.linspace(0, 0.8, 9)
+	spcy = np.linspace(0, samplerate/2, 9)
 
 	while True:
-		for i in range(512):
+		for i in range(128):
 			byts = b""
 
 			while len(byts) < 8192:
@@ -58,21 +58,13 @@ def stft_display():
 
 			ints = np.frombuffer(byts, dtype=np.uint16)
 
-			# Bus clock = 204 MHz
-			# ADC clock = 51 MHz
-			#
-			# 32 clocks per sample
-			#
-			# Samplerate = 1.59375 MHz
-			#
-			# Usable band = ~0.8 MHz
-			#
 			spectral = np.fft.fft(ints - np.mean(ints))[:2048]
 			stft_log.append(np.log10(np.abs(spectral)))
 
 		plt.clf()
 		plt.imshow(stft_log)
-		plt.xticks(spcy/0.8 * 2048, [f"{x:.1f} MHz" for x in spcy])
+		plt.xticks(spcy/(samplerate/2) * 2048, [f"{x:.1f} MHz" for x in spcy])
 		plt.pause(.1)
 
-wave_display()
+#wave_display()
+stft_display()

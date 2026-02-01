@@ -58,7 +58,7 @@ void adc_dma_init() {
 }
 
 // https://github.com/STMicroelectronics/STM32CubeH7/blob/master/Projects/NUCLEO-H743ZI/Examples/ADC/ADC_DMA_Transfer/Src/main.c
-// ADC bus clock is 275 MHz
+// ADC bus clock is 137.5 MHz
 void adc_init() {
 	__HAL_RCC_ADC12_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
@@ -68,7 +68,7 @@ void adc_init() {
 	hadc1 = (ADC_HandleTypeDef) {
 		.Instance = ADC1,
 		.Init = {
-			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV4,      /* Synchronous clock mode, input ADC clock divided by 4, so 68.75 MHz */
+			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV1,      /* Synchronous clock mode, input ADC clock divided by 2, so 68.75 MHz */
 			  .Resolution               = ADC_RESOLUTION_16B,            /* 16-bit resolution for converted data */
 			  .ScanConvMode             = DISABLE,                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
 			  .EOCSelection             = ADC_EOC_SINGLE_CONV,           /* EOC flag picked-up to indicate conversion end */
