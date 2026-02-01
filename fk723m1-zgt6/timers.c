@@ -86,9 +86,7 @@ void timers_init() {
 	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_12, .Mode = GPIO_MODE_INPUT, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST });
 	HAL_GPIO_Init(GPIOE, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_13, .Mode = GPIO_MODE_INPUT, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FAST });
 
-	//emit_timer_init(275 - 1);
-	//chop_timer_init(344 - 1); // ~0.8 MHz
-
-	emit_timer_init(50 - 1); // 5.5 MHz
-	chop_timer_init(55 - 1); // 5.0 MHz
+	//chop_timer_init(2 - 1); // 850 kHz
+	chop_timer_init(240 - 1); // 850 kHz
+	emit_timer_init(204 - 1); // 1.0 MHz
 }

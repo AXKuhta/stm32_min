@@ -90,9 +90,9 @@ void adc_init() {
 	}
 
 	sConfig = (ADC_ChannelConfTypeDef) {
-		.Channel = ADC_CHANNEL_9, // ADC_CHANNEL_4,
+		.Channel = ADC_CHANNEL_4,
 		.Rank = ADC_REGULAR_RANK_1,
-		.SamplingTime = ADC_SAMPLETIME_810CYCLES_5, // ADC_SAMPLETIME_16CYCLES_5,
+		.SamplingTime = ADC_SAMPLETIME_16CYCLES_5,
 		.SingleDiff = ADC_SINGLE_ENDED,
 		.OffsetNumber = ADC_OFFSET_NONE,
 		.Offset = 0
