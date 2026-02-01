@@ -28,7 +28,7 @@ static void system_clock_target(double mhz) {
 			.PLLSource = RCC_PLLSOURCE_HSE,
 			.PLLM = 2,
 			.PLLN = inte,
-			.PLLFRACN = frac,
+			.PLLFRACN = frac * 8192.0 + 0.5,
 			.PLLP = 1,
 			.PLLR = 2,
 			.PLLQ = 4,
