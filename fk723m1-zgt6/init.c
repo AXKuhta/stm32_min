@@ -17,11 +17,8 @@ static void system_clock_target(double mhz) {
 	while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
 	RCC_OscInitTypeDef RCC_OscInitStruct = (RCC_OscInitTypeDef){
-		.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48,
+		.OscillatorType = RCC_OSCILLATORTYPE_HSE,
 		.HSEState = RCC_HSE_ON,
-		.HSIState = RCC_HSI_ON, // HSI must be on of HSI48
-		.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
-		.HSI48State = RCC_HSI48_ON, // HSI48 used for USB
 		.CSIState = RCC_CSI_OFF,
 		.PLL = {
 			.PLLState = RCC_PLL_ON,
@@ -54,11 +51,28 @@ static void system_clock_target(double mhz) {
 
 	if (HAL_OK != HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3)) { while(1); }
 
+	// We can disable HSI now
+	if (HAL_OK != HAL_RCC_OscConfig(& (RCC_OscInitTypeDef){
+		.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48,
+		.HSIState = RCC_HSI_OFF,
+		.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
+		.HSI48State = RCC_HSI48_OFF,
+	})) { while(1); }
+
 	// tinyusb/hw/bsp/stm32h7/boards/stm32h723nucleo/board.h
-	// We cannot easily get 48 MHz from PLL so we use HSI48
 	RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInitStruct = (RCC_PeriphCLKInitTypeDef){
 		.PeriphClockSelection = RCC_PERIPHCLK_USB,
-		.UsbClockSelection = RCC_USBCLKSOURCE_HSI48
+		.UsbClockSelection = RCC_USBCLKSOURCE_PLL3,
+		.PLL3 = {
+			.PLL3M = 5,
+			.PLL3N = 48,
+			.PLL3FRACN = 0,
+			.PLL3P = 1,
+			.PLL3R = 2,
+			.PLL3Q = 5, // PLLQ used for USB
+			.PLL3VCOSEL = RCC_PLL1VCOWIDE,
+			.PLL3RGE = RCC_PLL1VCIRANGE_2
+		}
 	};
 
 	if (HAL_OK != HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInitStruct)) { while(1); }
@@ -80,5 +94,5 @@ void system_init() {
 	//CPU_CACHE_Enable();
 	HAL_Init();
 
-	system_clock_target(550);
+	system_clock_target(426);
 }
