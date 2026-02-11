@@ -24,7 +24,7 @@ EP = 0x03
 
 # Rates in MHz
 bus_clock = 426/4
-adc_clock = bus_clock/2
+adc_clock = bus_clock/4
 persample = 4.5 + 64.5 # timings depending on resolution + sampling time, see Table 228. TSAR timings depending on resolution
 samplerate = adc_clock/persample
 
@@ -50,9 +50,15 @@ def stft_display():
 	stft_log = []
 
 	band = np.arange(2048)/2048 * samplerate/2
-	filt = (band > .01) + 0.0
 	band = np.round(band, 1)
 	band = np.unique(band)[::2]
+
+	#lo = np.exp(1j * .6 * 1000 * 1000 * 2*np.pi*np.arange(4096)/(samplerate*1000*1000))
+	#filt = [1.0]*250 + [0.0]*(2048-250)
+	#filt = filt + list(reversed(filt))
+	#filt = np.array(filt) > 0
+
+	filt = (band > .01) + 0.0
 
 	while True:
 		for i in range(128):
@@ -71,41 +77,46 @@ def stft_display():
 		plt.xticks(band/samplerate*2 * 2048, [f"{bus_clock+x:.1f} MHz" for x in band])
 		plt.pause(.1)
 
+def stft_debug(temporal):
+	plt.imshow(np.log10(np.abs(np.fft.fftshift(np.fft.fft(np.split(temporal[:-(len(temporal)%8192)], 8192), 8192)))))
 
 def stream_audio():
 	stft_log = []
 	freq_log = []
 
-	filt = [1.0]*250 + [0.0]*(2048-250)
-	filt = filt + list(reversed(filt))
-	filt = np.array(filt) > 0
+	target = round(samplerate * 1000 * 1000 * 10)
 
-	lo = np.exp(1j * .6 * 1000 * 1000 * 2*np.pi*np.arange(4096)/(samplerate*1000*1000))
+	byts = b""
+
+	while len(byts) < target:
+		byts += handle.bulkRead(EP, 32768, timeout=1000)
+
+	byts = byts[:target]
+
+	lo = np.exp(1j * .6 * 1000 * 1000 * 2*np.pi*np.arange(target)/(samplerate*1000*1000))
+
+	ints = np.frombuffer(byts, dtype=np.uint8)
+
+	temporal = ints * lo
+
+	#plt.subplot(2, 1, 1)
+	#stft_debug(temporal)
+
+	# Handcrafted filter
+	spectral = np.array([1] * 8 + [0j] * 112 + [1] * 8) * np.exp(1j * 2 * np.pi * np.arange(128)/2)
+	temporal = np.convolve(temporal, np.fft.ifft(spectral))
+	frequenc = temporal * np.roll(temporal, 1).conj()
+	amplitud = np.angle(frequenc) / np.pi
+
+	#plt.subplot(2, 1, 2)
+	#stft_debug(temporal)
+	#plt.show()
+
+	print(f"OK. Audio samplerate: {samplerate*1000*1000:.1f} Hz")
 
 	# ffplay -f f32le -ar 85000 decode.f32
-	f = open("decode.f32", "wb")
-
-	while True:
-		for i in range(128):
-			byts = b""
-
-			while len(byts) < 4096:
-				byts += handle.bulkRead(EP, 1024, timeout=1000)
-
-			ints = np.frombuffer(byts, dtype=np.uint8) * lo
-
-			spectral = np.fft.fftshift(np.fft.fft(ints)[filt])
-			temporal = np.fft.ifft(np.fft.fftshift(spectral))
-			frequenc = temporal * np.roll(temporal, 1).conj()
-			#f.write(bytes(temporal))
-			stft_log.append(np.log10(np.abs(spectral)))
-			freq_log.append(np.angle(frequenc) / np.pi)
-			f.write(bytes(freq_log[-1].astype("float32")))
-
-		#plt.clf()
-		#plt.plot(np.hstack(freq_log)[-8000:])
-		#plt.imshow(stft_log[-1000:])
-		#plt.pause(.1)
+	with open("decode.f32", "wb") as f:
+		f.write(bytes(amplitud.astype("float32")))
 
 #wave_display()
 #stft_display()
