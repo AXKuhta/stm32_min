@@ -1,9 +1,9 @@
+from time import perf_counter
+import asyncio
 
 import matplotlib.pyplot as plt
 import numpy as np
 import usb1
-
-from time import perf_counter
 
 ctx = usb1.USBContext()
 handle = None
@@ -80,44 +80,52 @@ def stft_display():
 def stft_debug(temporal):
 	plt.imshow(np.log10(np.abs(np.fft.fftshift(np.fft.fft(np.split(temporal[:-(len(temporal)%8192)], 8192), 8192)))))
 
-def stream_audio():
-	stft_log = []
-	freq_log = []
-
-	target = round(samplerate * 1000 * 1000 * 10)
-
-	byts = b""
-
-	while len(byts) < target:
-		byts += handle.bulkRead(EP, 32768, timeout=1000)
-
-	byts = byts[:target]
-
+async def stream_audio():
+	target = round(samplerate * 1000 * 1000)
 	lo = np.exp(1j * .6 * 1000 * 1000 * 2*np.pi*np.arange(target)/(samplerate*1000*1000))
 
-	ints = np.frombuffer(byts, dtype=np.uint8)
+	ffplay = await asyncio.create_subprocess_exec("ffplay", "-f", "f32le", "-ar", f"{round(samplerate*1000*1000)}", "-", stdin=asyncio.subprocess.PIPE)
 
-	temporal = ints * lo
+	def pull_data():
+		byts = b""
 
-	#plt.subplot(2, 1, 1)
-	#stft_debug(temporal)
+		while len(byts) < target:
+			byts += handle.bulkRead(EP, 32768, timeout=1000)
 
-	# Handcrafted filter
-	spectral = np.array([1] * 8 + [0j] * 112 + [1] * 8) * np.exp(1j * 2 * np.pi * np.arange(128)/2)
-	temporal = np.convolve(temporal, np.fft.ifft(spectral))
-	frequenc = temporal * np.roll(temporal, 1).conj()
-	amplitud = np.angle(frequenc) / np.pi
+		return byts
 
-	#plt.subplot(2, 1, 2)
-	#stft_debug(temporal)
-	#plt.show()
+	i = 0
 
-	print(f"OK. Audio samplerate: {samplerate*1000*1000:.1f} Hz")
+	while True:
+		if i < 3: # Build up a buffer in blocking mode, then coast in nonblocking
+			byts = pull_data()
+		else:
+			byts = await asyncio.to_thread(pull_data)
 
-	# ffplay -f f32le -ar 85000 decode.f32
-	with open("decode.f32", "wb") as f:
-		f.write(bytes(amplitud.astype("float32")))
+		i += 1
+		byts = byts[:target]
+
+		ints = np.frombuffer(byts, dtype=np.uint8)
+
+		temporal = ints * lo
+
+		#plt.subplot(2, 1, 1)
+		#stft_debug(temporal)
+
+		# Handcrafted filter
+		spectral = np.array([1] * 8 + [0j] * 112 + [1] * 8) * np.exp(1j * 2 * np.pi * np.arange(128)/2)
+		temporal = np.convolve(temporal, np.fft.ifft(spectral))
+		frequenc = temporal * np.roll(temporal, 1).conj()
+		amplitud = np.angle(frequenc) / np.pi
+
+		#plt.subplot(2, 1, 2)
+		#stft_debug(temporal)
+		#plt.show()
+
+		ffplay.stdin.write( bytes(amplitud.astype("float32")) )
+		#await ffplay.stdin.drain() # required if not using await to_thread and blocking instead
 
 #wave_display()
 #stft_display()
-stream_audio()
+
+asyncio.run(stream_audio())
