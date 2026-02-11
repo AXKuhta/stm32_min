@@ -68,7 +68,7 @@ void adc_init() {
 	hadc1 = (ADC_HandleTypeDef) {
 		.Instance = ADC1,
 		.Init = {
-			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV1,      /* Synchronous clock mode, input ADC clock divided by 2, so 68.75 MHz */
+			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV2,      /* Synchronous clock mode, input ADC clock divided by 2, so 68.75 MHz */
 			  .Resolution               = ADC_RESOLUTION_8B,            /* 16-bit resolution for converted data */
 			  .ScanConvMode             = DISABLE,                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
 			  .EOCSelection             = ADC_EOC_SINGLE_CONV,           /* EOC flag picked-up to indicate conversion end */
@@ -92,7 +92,7 @@ void adc_init() {
 	sConfig = (ADC_ChannelConfTypeDef) {
 		.Channel = ADC_CHANNEL_4,
 		.Rank = ADC_REGULAR_RANK_1,
-		.SamplingTime = ADC_SAMPLETIME_16CYCLES_5,
+		.SamplingTime = ADC_SAMPLETIME_64CYCLES_5,
 		.SingleDiff = ADC_SINGLE_ENDED,
 		.OffsetNumber = ADC_OFFSET_NONE,
 		.Offset = 0
