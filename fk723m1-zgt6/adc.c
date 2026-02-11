@@ -43,8 +43,8 @@ void adc_dma_init() {
 			.Direction           = DMA_PERIPH_TO_MEMORY,
 			.PeriphInc           = DMA_PINC_DISABLE,
 			.MemInc              = DMA_MINC_ENABLE,
-			.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD,
-			.MemDataAlignment    = DMA_MDATAALIGN_HALFWORD,
+			.PeriphDataAlignment = DMA_PDATAALIGN_BYTE,
+			.MemDataAlignment    = DMA_MDATAALIGN_BYTE,
 			.Mode                = DMA_CIRCULAR,
 			.Priority            = DMA_PRIORITY_MEDIUM
 		}
@@ -69,7 +69,7 @@ void adc_init() {
 		.Instance = ADC1,
 		.Init = {
 			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV1,      /* Synchronous clock mode, input ADC clock divided by 2, so 68.75 MHz */
-			  .Resolution               = ADC_RESOLUTION_16B,            /* 16-bit resolution for converted data */
+			  .Resolution               = ADC_RESOLUTION_8B,            /* 16-bit resolution for converted data */
 			  .ScanConvMode             = DISABLE,                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
 			  .EOCSelection             = ADC_EOC_SINGLE_CONV,           /* EOC flag picked-up to indicate conversion end */
 			  .LowPowerAutoWait         = DISABLE,                       /* Auto-delayed conversion feature disabled */
@@ -110,7 +110,7 @@ void adc_init() {
 	// Caution: relies on hadc1 being populated
 	adc_dma_init();
 
-	if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, sizeof(adc_buf)/sizeof(uint16_t)) != HAL_OK) {
+	if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, sizeof(adc_buf)/sizeof(uint8_t)) != HAL_OK) {
 		while (1) {}
 	}
 }

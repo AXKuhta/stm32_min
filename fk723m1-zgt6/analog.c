@@ -95,6 +95,7 @@ void opamp1_init() {
 
 void analog_init() {
 	bias_init();
+	empty_init();
 	opamp1_init();
 	opamp2_init();
 }
