@@ -94,5 +94,5 @@ void system_init() {
 	//CPU_CACHE_Enable();
 	HAL_Init();
 
-	system_clock_target(426);
+	system_clock_target( (104.6 + 0.6) * 4 );
 }

@@ -23,7 +23,7 @@ handle.claimInterface(2)
 EP = 0x03
 
 # Rates in MHz
-bus_clock = 426/4
+bus_clock = ((104.6 + 0.6)*4)/4
 adc_clock = bus_clock/4
 persample = 4.5 + 64.5 # timings depending on resolution + sampling time, see Table 228. TSAR timings depending on resolution
 samplerate = adc_clock/persample
@@ -69,7 +69,7 @@ def stft_display():
 
 			ints = np.frombuffer(byts, dtype=np.uint8)
 
-			spectral = np.fft.fft(ints)[:2048] * filt
+			spectral = np.fft.fft(ints)[:2048] # * filt
 			stft_log.append(np.log10(np.abs(spectral)))
 
 		plt.clf()
@@ -86,13 +86,20 @@ async def stream_audio():
 
 	ffplay = await asyncio.create_subprocess_exec("ffplay", "-f", "f32le", "-ar", f"{round(samplerate*1000*1000)}", "-", stdin=asyncio.subprocess.PIPE)
 
+	def generator():
+		while True:
+			byts = b""
+
+			while len(byts) < target:
+				byts += handle.bulkRead(EP, 32768, timeout=1000)
+
+			yield byts[:target]
+			byts = byts[target:]
+
+	gen = generator()
+
 	def pull_data():
-		byts = b""
-
-		while len(byts) < target:
-			byts += handle.bulkRead(EP, 32768, timeout=1000)
-
-		return byts
+		return next(gen)
 
 	i = 0
 
@@ -103,7 +110,6 @@ async def stream_audio():
 			byts = await asyncio.to_thread(pull_data)
 
 		i += 1
-		byts = byts[:target]
 
 		ints = np.frombuffer(byts, dtype=np.uint8)
 
@@ -116,11 +122,11 @@ async def stream_audio():
 		spectral = np.array([1] * 8 + [0j] * 112 + [1] * 8) * np.exp(1j * 2 * np.pi * np.arange(128)/2)
 		temporal = np.convolve(temporal, np.fft.ifft(spectral))
 		frequenc = temporal * np.roll(temporal, 1).conj()
-		amplitud = np.angle(frequenc) / np.pi
+		amplitud = np.angle(frequenc[1:]) / np.pi
 
 		#plt.subplot(2, 1, 2)
 		#stft_debug(temporal)
-		#plt.show()
+		#plt.pause(.1)
 
 		ffplay.stdin.write( bytes(amplitud.astype("float32")) )
 		#await ffplay.stdin.drain() # required if not using await to_thread and blocking instead
