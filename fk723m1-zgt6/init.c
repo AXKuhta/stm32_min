@@ -51,24 +51,17 @@ static void system_clock_target(double mhz) {
 
 	if (HAL_OK != HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3)) { while(1); }
 
-	// We can disable HSI now
-	if (HAL_OK != HAL_RCC_OscConfig(& (RCC_OscInitTypeDef){
-		.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48,
-		.HSIState = RCC_HSI_OFF,
-		.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
-		.HSI48State = RCC_HSI48_OFF,
-	})) { while(1); }
-
 	// tinyusb/hw/bsp/stm32h7/boards/stm32h723nucleo/board.h
 	RCC_PeriphCLKInitTypeDef RCC_PeriphCLKInitStruct = (RCC_PeriphCLKInitTypeDef){
-		.PeriphClockSelection = RCC_PERIPHCLK_USB,
+		.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_ADC,
+		.AdcClockSelection = RCC_ADCCLKSOURCE_PLL3,
 		.UsbClockSelection = RCC_USBCLKSOURCE_PLL3,
 		.PLL3 = {
 			.PLL3M = 5,
 			.PLL3N = 48,
 			.PLL3FRACN = 0,
 			.PLL3P = 1,
-			.PLL3R = 2,
+			.PLL3R = 6, // PLLR used for ADC
 			.PLL3Q = 5, // PLLQ used for USB
 			.PLL3VCOSEL = RCC_PLL1VCOWIDE,
 			.PLL3RGE = RCC_PLL1VCIRANGE_2
@@ -76,6 +69,14 @@ static void system_clock_target(double mhz) {
 	};
 
 	if (HAL_OK != HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphCLKInitStruct)) { while(1); }
+
+	// We can disable HSI now
+	if (HAL_OK != HAL_RCC_OscConfig(& (RCC_OscInitTypeDef){
+		.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48,
+		.HSIState = RCC_HSI_OFF,
+		.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT,
+		.HSI48State = RCC_HSI48_OFF,
+	})) { while(1); }
 }
 
 static void CPU_CACHE_Enable(void) {

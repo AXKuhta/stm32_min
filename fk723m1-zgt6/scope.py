@@ -24,7 +24,7 @@ EP = 0x03
 
 # Rates in MHz
 bus_clock = ((104.6 + 0.6)*4)/4
-adc_clock = bus_clock/4
+adc_clock = 240.0/12
 persample = 4.5 + 32.5 # timings depending on resolution + sampling time, see Table 228. TSAR timings depending on resolution
 samplerate = adc_clock/persample
 

@@ -68,8 +68,8 @@ void adc_init() {
 	hadc1 = (ADC_HandleTypeDef) {
 		.Instance = ADC1,
 		.Init = {
-			  .ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV4,      /* Synchronous clock mode, input ADC clock divided by 2, so 68.75 MHz */
-			  .Resolution               = ADC_RESOLUTION_8B,            /* 16-bit resolution for converted data */
+			  .ClockPrescaler           = ADC_CLOCK_ASYNC_DIV1,          /* 240 MHz / 6 / 2, because DIV1 actually seems to be DIV2? :confused: */
+			  .Resolution               = ADC_RESOLUTION_8B,             /* 16-bit resolution for converted data */
 			  .ScanConvMode             = DISABLE,                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
 			  .EOCSelection             = ADC_EOC_SINGLE_CONV,           /* EOC flag picked-up to indicate conversion end */
 			  .LowPowerAutoWait         = DISABLE,                       /* Auto-delayed conversion feature disabled */
