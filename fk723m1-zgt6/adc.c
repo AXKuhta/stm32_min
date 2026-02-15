@@ -33,7 +33,7 @@ void DMA1_Stream1_IRQHandler(void) {
 void adc_dma_init() {
 	__HAL_RCC_DMA1_CLK_ENABLE();
 
-	HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 8, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
 
 	hdma_adc1 = (DMA_HandleTypeDef) {
@@ -92,7 +92,7 @@ void adc_init() {
 	sConfig = (ADC_ChannelConfTypeDef) {
 		.Channel = ADC_CHANNEL_4,
 		.Rank = ADC_REGULAR_RANK_1,
-		.SamplingTime = ADC_SAMPLETIME_64CYCLES_5,
+		.SamplingTime = ADC_SAMPLETIME_32CYCLES_5,
 		.SingleDiff = ADC_SINGLE_ENDED,
 		.OffsetNumber = ADC_OFFSET_NONE,
 		.Offset = 0

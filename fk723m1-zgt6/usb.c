@@ -13,6 +13,8 @@ void usb_hw_init(void) {
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_USB1_OTG_HS_CLK_ENABLE();
 
+	NVIC_SetPriority(OTG_HS_IRQn, 0);
+
 	// Only one peripheral
 	HAL_GPIO_Init(GPIOA, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_11, .Mode = GPIO_MODE_AF_PP, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FREQ_HIGH, .Alternate = GPIO_AF10_OTG1_HS });
 	HAL_GPIO_Init(GPIOA, &(GPIO_InitTypeDef){ .Pin = GPIO_PIN_12, .Mode = GPIO_MODE_AF_PP, .Pull = GPIO_NOPULL, .Speed = GPIO_SPEED_FREQ_HIGH, .Alternate = GPIO_AF10_OTG1_HS });

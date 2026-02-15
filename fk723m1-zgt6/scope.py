@@ -25,7 +25,7 @@ EP = 0x03
 # Rates in MHz
 bus_clock = ((104.6 + 0.6)*4)/4
 adc_clock = bus_clock/4
-persample = 4.5 + 64.5 # timings depending on resolution + sampling time, see Table 228. TSAR timings depending on resolution
+persample = 4.5 + 32.5 # timings depending on resolution + sampling time, see Table 228. TSAR timings depending on resolution
 samplerate = adc_clock/persample
 
 def wave_display():
