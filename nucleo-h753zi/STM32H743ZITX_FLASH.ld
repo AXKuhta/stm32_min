@@ -8,7 +8,7 @@
 **  Abstract    : Linker script for NUCLEO-H743ZI Board embedding STM32H743ZITx Device from stm32h7 series
 **                      2048Kbytes ROM
 **                      64Kbytes ITCMRAM
-**                      128Kbytes RAM
+**                      512Kbytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -36,8 +36,9 @@
 /* Entry Point */
 ENTRY(Reset_Handler)
 
+/* Let's have stack in DTCM */
 /* Highest address of the user mode stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
+_estack = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM); /* end of "RAM_D1" Ram type memory */
 
 _Min_Heap_Size = 0x200; /* required amount of heap */
 _Min_Stack_Size = 0x400; /* required amount of stack */
@@ -45,9 +46,12 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  ITCMRAM    (xrw)    : ORIGIN = 0x00000000,   LENGTH = 64K
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-  ROM    (rx)    : ORIGIN = 0x08000000,   LENGTH = 2048K
+DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
+RAM_D1 (xrw)       : ORIGIN = 0x24000000, LENGTH = 512K
+RAM_D2 (xrw)       : ORIGIN = 0x30000000, LENGTH = 288K
+RAM_D3 (xrw)       : ORIGIN = 0x38000000, LENGTH = 64K
+ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
+ROM (rx)         : ORIGIN = 0x8000000, LENGTH = 2048K
 }
 
 /* Sections */
@@ -135,7 +139,7 @@ SECTIONS
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 
-  /* Initialized data sections into "RAM" Ram type memory */
+  /* Initialized data sections into "RAM_D1" Ram type memory */
   .data :
   {
     . = ALIGN(4);
@@ -148,9 +152,9 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
 
-  } >RAM AT> ROM
+  } >RAM_D1 AT> ROM
 
-  /* Uninitialized data section into "RAM" Ram type memory */
+  /* Uninitialized data section into "RAM_D1" Ram type memory */
   . = ALIGN(4);
   .bss :
   {
@@ -164,20 +168,71 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >RAM
-
-  /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
-  ._user_heap_stack :
+  } >RAM_D1
+/* used by the startup to initialize data */
+  _siRAM_D2 = LOADADDR(.data_RAM_D2);
+  /* Initialized data sections goes into RAM_D2, load LMA copy after code */
+  .data_RAM_D2 : 
   {
-    . = ALIGN(8);
-    PROVIDE ( end = . );
-    PROVIDE ( _end = . );
-    . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
-    . = ALIGN(8);
-  } >RAM
+    . = ALIGN(4);
+    _sRAM_D2 = .;        /* create a global symbol at data start */
+    *(.data_RAM_D2)           /* .data sections */
+    *(.data_RAM_D2*)          /* .data* sections */
 
-  /* Remove information from the compiler libraries */
+    . = ALIGN(4);
+    _eRAM_D2 = .;        /* define a global symbol at data end */
+  } >RAM_D2 AT> ROM 
+
+  /* Uninitialized data section */
+  . = ALIGN(4);
+  .bss_RAM_D2 :
+  {
+    /* This is used by the startup in order to initialize the .bss section */
+    _sbss_RAM_D2 = .;         /* define a global symbol at bss start */
+    __bss_start__ = _sbss_RAM_D2;
+    *(.bss_RAM_D2)
+    *(.bss_RAM_D2*)
+    *(COMMON)
+
+    . = ALIGN(4);
+    _ebss_RAM_D2 = .;         /* define a global symbol at bss end */
+    __bss_end__ = _ebss_RAM_D2;
+  } >RAM_D2
+
+/* used by the startup to initialize data */
+  _siRAM_D3 = LOADADDR(.RAM_D3);
+
+  /* Initialized data sections goes into RAM_D3, load LMA copy after code */
+  .data_RAM_D3 : 
+  {
+    . = ALIGN(4);
+    _sRAM_D3 = .;        /* create a global symbol at data start */
+    *(.data_RAM_D3)           /* .data sections */
+    *(.data_RAM_D3*)          /* .data* sections */
+
+    . = ALIGN(4);
+    _eRAM_D3 = .;        /* define a global symbol at data end */
+  } >RAM_D3 AT> ROM 
+
+  
+  /* Uninitialized data section */
+  . = ALIGN(4);
+  .bss_RAM_D3 :
+  {
+    /* This is used by the startup in order to initialize the .bss section */
+    _sbss_RAM_D3 = .;         /* define a global symbol at bss start */
+    __bss_start__ = _sbss_RAM_D3;
+    *(.bss_RAM_D3)
+    *(.bss_RAM_D3*)
+    *(COMMON)
+
+    . = ALIGN(4);
+    _ebss_RAM_D3 = .;         /* define a global symbol at bss end */
+    __bss_end__ = _ebss_RAM_D3;
+  } >RAM_D3
+
+
+  /* Remove information from the standard libraries */
   /DISCARD/ :
   {
     libc.a ( * )
@@ -186,4 +241,8 @@ SECTIONS
   }
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
+  .RAM_D1 : {*(.RAM_D1)} >RAM_D1 AT> ROM 
+  .RAM_D2 : {*(.RAM_D2)} >RAM_D2 AT> ROM 
+  .RAM_D3 : {*(.RAM_D3)} >RAM_D3 AT> ROM 
+  
 }

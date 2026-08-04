@@ -17,7 +17,7 @@ APP_OBJS = $(APP_SOURCE:c=o)
 
 OBJS = $(STARTUP_OBJ) $(HAL_OBJS) $(APP_OBJS)
 
-# Sourced from STM32CubeH7/Projects/NUCLEO-H743ZI/Examples/RCC/RCC_ClockConfig/STM32CubeIDE/STM32H743ZITX_FLASH.ld
+# Sourced from STM32CubeH7/Projects/NUCLEO-H743ZI/Examples/MDMA/MDMA_LinkedList/STM32CubeIDE/STM32H743ZITX_FLASH.ld
 LDSCRIPT = STM32H743ZITX_FLASH.ld
 ################################################################################
 
@@ -35,7 +35,7 @@ MCU_FLAGS := -mcpu=cortex-m7 -mfloat-abi=hard
 # -mfpu=fpv4-sp-d16
 
 CC	 = arm-none-eabi-gcc
-FLAGS	 = $(MCU_FLAGS) $(DEFINES) $(INCLUDE) -g -c -O2 -Wall -Wextra
+FLAGS	 = $(MCU_FLAGS) $(DEFINES) $(INCLUDE) -ggdb3 -c -O2 -Wall -Wextra
 LFLAGS	 = $(MCU_FLAGS) -T $(LDSCRIPT) -Wl,--print-memory-usage -Wl,--gc-sections -Wl,-Map=firmware.map,--cref
 ################################################################################
 
@@ -48,7 +48,7 @@ all: firmware.elf
 
 firmware.elf: $(OBJS)
 	@echo " [LD] firmware.elf"
-	@$(CC) -g $^ -o firmware.elf $(LFLAGS)
+	@$(CC) -ggdb3 $^ -o firmware.elf $(LFLAGS)
 
 # All .c files
 %.o: %.c

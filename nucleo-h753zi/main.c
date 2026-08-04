@@ -1,7 +1,11 @@
 #include "stm32h7xx_hal.h"
 
 void init_clock(void);
-void init_ov2640();
+void init_gc2145();
+
+void gc2145_capture();
+
+uint32_t captures = 0;
 
 int main() {
 	__HAL_RCC_GPIOB_CLK_ENABLE();
@@ -18,7 +22,11 @@ int main() {
 
 	init_clock();
 
-	init_ov2640();
+	init_gc2145();
 
-	while (1) {};
+	while (1) {
+		gc2145_capture();
+
+		captures++;
+	};
 }
