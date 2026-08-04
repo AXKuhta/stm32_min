@@ -76,10 +76,10 @@ def main() -> None:
         try:
             # The CPU is halted, but an in-progress DCMI snapshot/DMA can finish.
             deadline = time.monotonic() + 2.0
-            while target.read32(DCMI_CR) & DCMI_CR_CAPTURE:
-                if time.monotonic() >= deadline:
-                    raise TimeoutError("DCMI capture did not finish within 2 seconds")
-                time.sleep(0.005)
+            #while target.read32(DCMI_CR) & DCMI_CR_CAPTURE:
+            #    if time.monotonic() >= deadline:
+            #        raise TimeoutError("DCMI capture did not finish within 2 seconds")
+            #    time.sleep(0.005)
 
             data = bytearray()
             for offset in range(0, args.size, 4096):

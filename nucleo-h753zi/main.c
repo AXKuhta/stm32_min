@@ -26,7 +26,6 @@ int main() {
 
 	while (1) {
 		gc2145_capture();
-
 		captures++;
 	};
 }

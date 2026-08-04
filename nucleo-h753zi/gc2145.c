@@ -61,7 +61,7 @@ static uint8_t sccb_on_command[][2] = {
 	{0xf6, 0x00},
 	{0xf7, 0x1d},
 	{0xf8, 0x85},
-	{0xfa, 0x00},
+	{0xfa, 0xf8}, // CLKDIV + CLKDUTY (Please keep 50%)
 	{0xf9, 0xfe},
 	{0xf2, 0x00},
 	/////////////////////////////////////////////////
@@ -99,7 +99,7 @@ static uint8_t sccb_on_command[][2] = {
 	{0x20, 0x03},
 	{0x21, 0x40},
 	{0x22, 0xa0},
-	{0x24, 0x16},
+	{0x24, 0x00}, // DRVSTREN
 	{0x25, 0x01},
 	{0x26, 0x10},
 	{0x2d, 0x60},
@@ -731,7 +731,7 @@ static void gc2145_i2c_write(uint8_t buf[], size_t sz) {
 static void dcmi_dma_init() {
 	__HAL_RCC_DMA1_CLK_ENABLE();
 
-	HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 8, 0);
+	HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
 
 	hdma_dcmi = (DMA_HandleTypeDef) {
@@ -743,7 +743,7 @@ static void dcmi_dma_init() {
 			.MemInc              = DMA_MINC_ENABLE,
 			.PeriphDataAlignment = DMA_PDATAALIGN_WORD,
 			.MemDataAlignment    = DMA_MDATAALIGN_WORD,
-			.Mode                = DMA_CIRCULAR,
+			.Mode                = DMA_NORMAL,
 			.Priority            = DMA_PRIORITY_MEDIUM
 		}
 	};
@@ -927,7 +927,7 @@ void init_gc2145() {
 		}
 	};
 
-	HAL_NVIC_SetPriority(DCMI_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(DCMI_IRQn, 8, 0);
 	HAL_NVIC_EnableIRQ(DCMI_IRQn);
 
 	if (HAL_OK != HAL_DCMI_Init(&hdcmi)) while (1) {};
@@ -940,10 +940,18 @@ void init_gc2145() {
 
 _Alignas(4) uint16_t fb[320*240] = {0};
 
+uint32_t errors = 0;
+
 void gc2145_capture() {
 	HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_SNAPSHOT, (uint32_t)(void*)fb, sizeof(fb)/4);
 
-	// Wait for frame
-	while ((DCMI->CR & DCMI_CR_CAPTURE) != 0) {
+	uint32_t timeout = HAL_GetTick() + 1000;
+
+	while (HAL_DCMI_GetState(&hdcmi) == HAL_DCMI_STATE_BUSY) {
+		if (HAL_GetTick() > timeout) {
+			HAL_DCMI_Stop(&hdcmi);
+			errors++;
+			return;
+		}
 	}
 }
