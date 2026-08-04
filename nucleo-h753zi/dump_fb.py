@@ -9,7 +9,7 @@ from pyocd.core.helpers import ConnectHelper
 from pyocd.core.target import Target
 
 FB_ADDRESS = 0x24000618
-FB_SIZE = 320 * 240 * 2
+FB_SIZE = 320 * 320 * 2
 DCMI_CR = 0x48020000
 DCMI_CR_CAPTURE = 1 << 0
 
@@ -54,8 +54,8 @@ def main() -> None:
     parser.add_argument("--size", type=auto_int, default=FB_SIZE)
     parser.add_argument("--probe", help="probe unique ID when multiple probes are connected")
     parser.add_argument("--target", default="cortex_m", help="pyOCD target name (default: cortex_m)")
-    parser.add_argument("--width", type=int, default=320)
-    parser.add_argument("--height", type=int, default=240)
+    parser.add_argument("--width", type=int, default=1600)
+    parser.add_argument("--height", type=int, default=64)
     parser.add_argument("--byte-order", choices=("big", "little"), default="big")
     parser.add_argument("--no-display", action="store_true")
     parser.add_argument("--leave-halted", action="store_true")

@@ -932,13 +932,13 @@ void init_gc2145() {
 
 	if (HAL_OK != HAL_DCMI_Init(&hdcmi)) while (1) {};
 
-	set_framesize(320, 240);
+	set_framesize(1600, 64);
 
 	dcmi_dma_init();
 
 }
 
-_Alignas(4) uint16_t fb[320*240] = {0};
+_Alignas(4) uint16_t fb[320*320] = {0};
 
 uint32_t errors = 0;
 
